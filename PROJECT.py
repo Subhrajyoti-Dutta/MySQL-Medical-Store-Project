@@ -1,9 +1,43 @@
-import mysql.connector as sql
+import psycopg2 as sql
 import tkinter as tk
 import tkinter.messagebox as tm
 from tkinter import *
 import datetime as dt
 passwod=None
+
+def search():
+    def searching():
+        liss3=[]                                #this will contain all the data
+        liss4=[]                                #this will contain only the searched data
+        mydb=sql.connect(user="root",host="localhost",passwd=passwod,database="medishop")
+        mycursor=mydb.cursor()
+        mycursor.execute("select * from  inventory")
+        liss=[100,160,300,360]
+        liss2=["SLNO","NAME_OF_MEDICINE","PRICE"," QUANTITY"]                                #it will show the heading
+        for k in range(0,4):
+            namelabel=tk.Label(window4,text=liss2[k]).place(relx = 0,rely=0, x =liss[k], y = 140, anchor = NW)
+        for i in mycursor:
+            liss3.append(list(i))                                #appending the datas
+        NAME=str(name.get()).upper()
+        for j in liss3:
+            if j[1]==NAME:                                #appending the searched data 
+                liss4.append(j)
+        j=0
+        for i in liss4:
+            for k in range(0,4):
+                namelabel=tk.Label(window4,text=i[k]).place(relx = 0,rely=0, x =liss[k], y = 170+j*30, anchor = NW)                                #this part is displaying the data
+            j+=1
+    window4=tk.Tk()
+    window4.title("SEARCH")
+    window4.geometry("600x300")
+    label=tk.Label(window4,text="SEARCH FOR MEDICINE").place(relx = 0.5,rely=0, x =0, y = 20, anchor = N)
+    name=tk.Entry(window4,width="40")
+    namelabel=tk.Label(window4,text="ENTER THE NAME OF THE MEDICINE : ")
+    namelabel.place(relx = 0,rely=0, x =20, y = 50, anchor = NW)
+    name.place(relx = 0.5,rely=0, x =0, y = 50, anchor = NW)
+    enter=tk.Button(window4,text="ENTER",command=searching,width="10")
+    enter.place(relx = 0.5,rely=0, x =0, y = 120, anchor = S)
+
 def insertion():                                #this will insert a record
     def insert():
         SLNO=str(slno.get()).upper()
@@ -39,6 +73,7 @@ def insertion():                                #this will insert a record
     qua.place(relx = 0.5,rely=0, x =0, y = 140, anchor = NW)
     enter=tk.Button(window1,text="ENTER",command=insert,width="10")
     enter.place(relx = 0.5,rely=0, x =0, y = 200, anchor = S)
+
 def deletion():                                #this will delete a record
     def delete():
         SLNO=str(slno.get())
@@ -49,7 +84,7 @@ def deletion():                                #this will delete a record
         mycursor.execute(str(rock))
         mydb.commit()
         mydb.close()
-        tm.showinfo("Alert Message","record successfully deleted")
+        tm.showinfo("Alert Message","Record Successfully Deleted")
     window2=tk.Tk()
     window2.title("DELETE DATA")
     window2.geometry("600x300")
@@ -64,6 +99,49 @@ def deletion():                                #this will delete a record
     name.place(relx = 0.5,rely=0, x =0, y = 80, anchor = NW)
     enter=tk.Button(window2,text="ENTER",command=delete,width="10")
     enter.place(relx = 0.5,rely=0, x =0, y = 140, anchor = S)
+
+def showall():
+    def refresh():
+        data()                                #the refresh function runs the function data
+    def data():
+        mydb=sql.connect(user="root",host="localhost",passwd=passwod,database="medishop")
+        mycursor=mydb.cursor()
+        mycursor.execute("select * from  inventory")
+        j=0
+        liss=[100,160,300,360]                                #contains the width of columns
+        liss2=["                          ","     SLNO     ","     NAME_OF_MEDICINE     ","     PRICE     ","     QUANTITY     "]                                #contains the headings of columns
+        for k in range(0,5):                                #print the heading
+            namelabel=tk.Label(frame,text=liss2[k]).grid(row=1,column=k)
+        for i in mycursor:
+            for k in range(0,4):                                #print the data
+                namelabel=tk.Label(frame,text=i[k]).grid(row=j+2,column=k+1)
+            j+=1
+        mydb.close()
+        
+    def myfunction(event):
+        canvas.configure(scrollregion=canvas.bbox("all"),width=560,height=200)
+    
+    window2=tk.Tk()
+    window2.title("ALL RECORD")
+    window2.geometry("600x300")
+    
+    myframe=tk.Frame(window2,relief=GROOVE,width=100,height=100,bd=1)
+    myframe.place(x=10,y=60)
+    
+    canvas=tk.Canvas(myframe)                                #following are the codes for the scrollbar which only work in canvas
+    frame=tk.Frame(canvas)
+    myscrollbar=tk.Scrollbar(myframe,orient="vertical",command=canvas.yview)
+    canvas.configure(yscrollcommand=myscrollbar.set)
+    
+    myscrollbar.pack(side="right",fill="y")
+    canvas.pack(side="left")
+    canvas.create_window((0,0),window=frame,anchor='nw')
+    label=tk.Label(window2,text="LIST OF ALL THE MEDICINE").place(relx = 0.5,rely=0, x =0, y = 20, anchor = N)
+    frame.bind("<Configure>",myfunction)
+    enter=tk.Button(window2,text="REFRESH",command=refresh,width="10")                                #this will refresh the window incase u update ur data live
+    enter.place(relx = 1,rely=0, x =-10, y = 10, anchor = NE)
+    data()
+    window2.mainloop()
 
 def sale():
     temp_record=[]
@@ -174,6 +252,7 @@ def sale():
     phlabel.place(relx = 0,rely=0, x =20, y = 80, anchor = NW)
     ph.place(relx = 0.5,rely=0, x =0, y = 80, anchor = NW)
     sale0()
+
 def showsale():                                #this show all the record of sale done
     def refresh():                                #refresh the window incase the data is changed live
         data()
@@ -215,81 +294,7 @@ def showsale():                                #this show all the record of sale
     enter.place(relx = 1,rely=0, x =-10, y = 10, anchor = NE)
     data()
     window2.mainloop()
-def search():
-    def searching():
-        liss3=[]                                #this will contain all the data
-        liss4=[]                                #this will contain only the searched data
-        mydb=sql.connect(user="root",host="localhost",passwd=passwod,database="medishop")
-        mycursor=mydb.cursor()
-        mycursor.execute("select * from  inventory")
-        liss=[100,160,300,360]
-        liss2=["SLNO","NAME_OF_MEDICINE","PRICE"," QUANTITY"]                                #it will show the heading
-        for k in range(0,4):
-            namelabel=tk.Label(window4,text=liss2[k]).place(relx = 0,rely=0, x =liss[k], y = 140, anchor = NW)
-        for i in mycursor:
-            liss3.append(list(i))                                #appending the datas
-        NAME=str(name.get()).upper()
-        for j in liss3:
-            if j[1]==NAME:                                #appending the searched data 
-                liss4.append(j)
-        j=0
-        for i in liss4:
-            for k in range(0,4):
-                namelabel=tk.Label(window4,text=i[k]).place(relx = 0,rely=0, x =liss[k], y = 170+j*30, anchor = NW)                                #this part is displaying the data
-            j+=1
-    window4=tk.Tk()
-    window4.title("SEARCH")
-    window4.geometry("600x300")
-    label=tk.Label(window4,text="SEARCH FOR MEDICINE").place(relx = 0.5,rely=0, x =0, y = 20, anchor = N)
-    name=tk.Entry(window4,width="40")
-    namelabel=tk.Label(window4,text="ENTER THE NAME OF THE MEDICINE : ")
-    namelabel.place(relx = 0,rely=0, x =20, y = 50, anchor = NW)
-    name.place(relx = 0.5,rely=0, x =0, y = 50, anchor = NW)
-    enter=tk.Button(window4,text="ENTER",command=searching,width="10")
-    enter.place(relx = 0.5,rely=0, x =0, y = 120, anchor = S)
 
-def showall():
-    def refresh():
-        data()                                #the refresh function runs the function data
-    def data():
-        mydb=sql.connect(user="root",host="localhost",passwd=passwod,database="medishop")
-        mycursor=mydb.cursor()
-        mycursor.execute("select * from  inventory")
-        j=0
-        liss=[100,160,300,360]                                #contains the width of columns
-        liss2=["                          ","     SLNO     ","     NAME_OF_MEDICINE     ","     PRICE     ","     QUANTITY     "]                                #contains the headings of columns
-        for k in range(0,5):                                #print the heading
-            namelabel=tk.Label(frame,text=liss2[k]).grid(row=1,column=k)
-        for i in mycursor:
-            for k in range(0,4):                                #print the data
-                namelabel=tk.Label(frame,text=i[k]).grid(row=j+2,column=k+1)
-            j+=1
-        mydb.close()
-        
-    def myfunction(event):
-        canvas.configure(scrollregion=canvas.bbox("all"),width=560,height=200)
-    
-    window2=tk.Tk()
-    window2.title("ALL RECORD")
-    window2.geometry("600x300")
-    
-    myframe=tk.Frame(window2,relief=GROOVE,width=100,height=100,bd=1)
-    myframe.place(x=10,y=60)
-    
-    canvas=tk.Canvas(myframe)                                #following are the codes for the scrollbar which only work in canvas
-    frame=tk.Frame(canvas)
-    myscrollbar=tk.Scrollbar(myframe,orient="vertical",command=canvas.yview)
-    canvas.configure(yscrollcommand=myscrollbar.set)
-    
-    myscrollbar.pack(side="right",fill="y")
-    canvas.pack(side="left")
-    canvas.create_window((0,0),window=frame,anchor='nw')
-    label=tk.Label(window2,text="LIST OF ALL THE MEDICINE").place(relx = 0.5,rely=0, x =0, y = 20, anchor = N)
-    frame.bind("<Configure>",myfunction)
-    enter=tk.Button(window2,text="REFRESH",command=refresh,width="10")                                #this will refresh the window incase u update ur data live
-    enter.place(relx = 1,rely=0, x =-10, y = 10, anchor = NE)
-    data()
-    window2.mainloop()
 def passwod():
     global passwod
     passwod=passwd.get()                          #passwod contains the password for mysql
@@ -345,6 +350,7 @@ def passwod():
     
     except:                                #this will show the message box of error incase the password is wrong
         tm.showinfo("Alert Message","Wrong Password")
+
 windows=tk.Tk()
 windows.title(" ")
 windows.geometry("475x130")

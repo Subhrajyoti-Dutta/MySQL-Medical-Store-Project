@@ -1,27 +1,53 @@
-import mysql.connector as sql
+import psycopg2 as sql
 import tkinter as tk
 import tkinter.messagebox as tm
 # from tkinter import *
-import datetime as dt
+# import datetime as dt
+import inventory
+from properties import Properties
 
+class Password(Properties):
+	def __init__(self):
+		Properties.__init__(self)
+		self.winHeight = 120
+		self.createPasswordWindow()
 
-passwod=None
+	def createPasswordWindow(self):
 
-windows     = tk.Tk()
-windows.title("Pasword")
-winwidth    = 550
-winheight   = 120
-windows.geometry(f"{winwidth}x{winheight}")
+		self.windows = tk.Tk()
+		self.windows.title("Password")
+		self.windows.geometry(f"{self.winWidth}x{self.winHeight}")
 
-pwdlabel = tk.Label(windows, text="ENTER THE PASSWORD : ")
-pwdlabel.place(relx = 0.5, rely=0, x = -255, y = winheight//4, anchor = "nw")
+		self.pwdLabel = tk.Label(self.windows, text="ENTER THE PASSWORD : ")
+		self.pwdLabel.place(relx = 0.5, rely=0, x = self.LabelStartX, y = self.winHeight//3, anchor = self.LabelAnchor)
 
-pwdentry = tk.Entry(windows, width="40")
-pwdentry.place(relx = 0.5, rely=0, x = -75,  y = winheight//4, anchor = "nw")
+		self.pwdEntry = tk.Entry(self.windows, width=self.EntryLength)
+		self.pwdEntry.place(relx = 0.5, rely=0, x = self.EntryStartX, y = self.winHeight//3, anchor = self.EntryAnchor)
 
-enter =    tk.Button(windows, text="ENTER", command=passwod, width="10")
-enter.place(   relx = 0.5, rely=0, x = 0,    y = 100,          anchor = "s" )
+		self.enter = tk.Button(self.windows, text="ENTER", command = self.postPassword, width="10")
+		self.enter.place(   relx = 0.5, rely=0, x = 0,    y = 2 * self.winHeight//3, anchor = "center" )
 
-windows.mainloop()
+		self.windows.mainloop()
 
-print(type(passwd.get()))
+	def checkPwd(self, pwd, userId = "postgres", hostId = "localhost"):
+		try:
+			Properties.mydb=sql.connect(user=userId, host=hostId, password = pwd)
+			Properties.userId = userId
+			Properties.hostId = hostId
+			Properties.pwd = pwd
+			self.windows.destroy()
+			return True
+		except:
+			self.wrgPwd()
+			return False
+
+	def wrgPwd():
+		tm.showinfo("Alert Message","Wrong Password")
+
+	def postPassword(self):
+		validPwd = self.checkPwd(self.pwdEntry.get())
+		if validPwd:
+			inventory.Inventory()
+
+if __name__ == "__main__":
+	Password()
